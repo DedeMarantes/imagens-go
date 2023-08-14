@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"image/jpeg"
 	"image/png"
 	"log"
 	"os"
@@ -26,7 +27,7 @@ func GetPixel(img image.Image, x, y int) uint32 {
 	return pixel
 }
 
-func ReadPngImage(file string) (image.Image, error) {
+func ReadImage(file string) (image.Image, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -61,13 +62,28 @@ func CreatePng(img image.Image, outputFile string) error {
 	return nil
 }
 
+func CreateJpg(img image.Image, outputFile string) error {
+	f, err := os.Create(outputFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	quality := jpeg.Options{
+		Quality: 90,
+	}
+	if err := jpeg.Encode(f, img, &quality); err != nil {
+		return err
+	}
+	return nil
+}
+
 func ResizeImage(img image.Image, weight, height int) image.Image {
 	resizedImage := image.NewRGBA(image.Rect(0, 0, weight, height))
 	draw.Draw(resizedImage, resizedImage.Bounds(), img, img.Bounds().Min, draw.Src)
 	return resizedImage
 }
 
-func FindPngFiles(dir string) ([]string, error) {
+func FindImageFiles(dir string) ([]string, error) {
 	var files []string
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -75,7 +91,7 @@ func FindPngFiles(dir string) ([]string, error) {
 			return err
 		}
 
-		if !info.IsDir() && strings.HasSuffix(info.Name(), ".png") {
+		if !info.IsDir() && (strings.HasSuffix(info.Name(), ".png") || strings.HasSuffix(info.Name(), ".jpeg") || strings.HasSuffix(info.Name(), ".jpg")) {
 			files = append(files, path)
 		}
 
@@ -93,7 +109,7 @@ func ProcessImages(files []string) chan image.Image {
 	results := make(chan image.Image)
 	for _, file := range files {
 		go func(file string) {
-			img, err := ReadPngImage(file)
+			img, err := ReadImage(file)
 			if err != nil {
 				log.Println(err)
 			}
