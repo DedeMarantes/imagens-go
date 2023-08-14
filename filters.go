@@ -50,25 +50,25 @@ func SepiaFilter(img image.Image) image.Image {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			pixel := GetPixel(img, x, y)
 
-			// Extract color components
+			// Extraindo compontentes de cor
 			a, r, g, b := GetColorComponents(pixel)
 
-			// Apply sepia filter
+			// Aplicando o filtro sepia
 			sepiaR := 0.393*float64(r) + 0.769*float64(g) + 0.189*float64(b)
 			sepiaG := 0.349*float64(r) + 0.686*float64(g) + 0.168*float64(b)
 			sepiaB := 0.272*float64(r) + 0.534*float64(g) + 0.131*float64(b)
 
-			// Adjust the sepia values to ensure they are within the valid range
+			// Ajustar os valores de sepia para o máximo de 255
 			sepiaR = math.Min(sepiaR, 255)
 			sepiaG = math.Min(sepiaG, 255)
 			sepiaB = math.Min(sepiaB, 255)
 
-			// Convert the sepia values to uint8
+			// Converter os valores de sepia para uint8
 			sepiaRUint8 := uint8(sepiaR)
 			sepiaGUint8 := uint8(sepiaG)
 			sepiaBUint8 := uint8(sepiaB)
 
-			// Set the new pixel value in the filtered image
+			// Setando os novos valores de cor
 			filteredImg.SetRGBA(x, y, color.RGBA{
 				R: sepiaRUint8,
 				G: sepiaGUint8,
